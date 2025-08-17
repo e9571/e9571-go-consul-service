@@ -14,7 +14,7 @@ import (
 
 func main() {
 	// 配置服务
-	port := "30012"
+	port := "3000"
 
 	serviceName := "go-service"
 	serviceID := fmt.Sprintf("%s-%s", serviceName, uuid.New().String())
