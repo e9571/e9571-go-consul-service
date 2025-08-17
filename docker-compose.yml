@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  consul:
+    image: hashicorp/consul:latest
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    command: "agent -server -bootstrap -ui -client=0.0.0.0"
+    networks:
+      - app-network
+
+  fabio:
+    image: fabiolb/fabio:latest
+    environment:
+      - FABIO_REGISTRY_CONSUL_ADDR=consul:8500
+    ports:
+      - "9998:9998"
+      - "9999:9999"
+    depends_on:
+      - consul
+    networks:
+      - app-network
+
+  go-service:
+    image: e9571/go-consul-service:latest
+    environment:
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
+      - PORT=3000
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - consul
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
